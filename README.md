@@ -1,10 +1,10 @@
 # Soupmix
 
 
-[![Latest Stable Version](https://poser.pugx.org/mkorkmaz/soupmix/v/stable)](https://packagist.org/packages/mkorkmaz/soupmix) [![Total Downloads](https://poser.pugx.org/mkorkmaz/soupmix/downloads)](https://packagist.org/packages/mkorkmaz/soupmix) [![Latest Unstable Version](https://poser.pugx.org/mkorkmaz/soupmix/v/unstable)](https://packagist.org/packages/mkorkmaz/soupmix) [![License](https://poser.pugx.org/mkorkmaz/soupmix/license)](https://packagist.org/packages/mkorkmaz/soupmix)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/mkorkmaz/soupmix/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/mkorkmaz/soupmix/)
+[![Latest Stable Version](https://poser.pugx.org/soupmix/elasticsearch/v/stable)](https://packagist.org/packages/soupmix/elasticsearch) [![Total Downloads](https://poser.pugx.org/soupmix/elasticsearch/downloads)](https://packagist.org/packages/soupmix/elasticsearch) [![Latest Unstable Version](https://poser.pugx.org/soupmix/elasticsearch/v/unstable)](https://packagist.org/packages/soupmix/elasticsearch) [![License](https://poser.pugx.org/soupmix/elasticsearch/license)](https://packagist.org/packages/soupmix/elasticsearch)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/soupmix/elasticsearch/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/soupmix/elasticsearch/)
 
-Simple PHP low level database adapters collection to handle CRUD operations. This library does not provide any ORM or ODM. 
+Simple low level Elasticsearch adapter to handle CRUD operations written in PHP. This library does not provide any ORM or ODM. 
 
 ## Adapters
 
@@ -22,14 +22,14 @@ Simple PHP low level database adapters collection to handle CRUD operations. Thi
 It's recommended that you use [Composer](https://getcomposer.org/) to install Soupmix.
 
 ```bash
-$ composer require  --prefer-dist mkorkmaz/soupmix "*"
+$ composer require soupmix/elasticsearch "~.1"
 ```
 
-This will install Soupmix and all required dependencies. Soupmix requires PHP 5.4.0 or newer, mongodb extension: 1.1.0 or newer, [mongo-php-library](https://github.com/mongodb/mongo-php-library) library  or newer form MongoDB, [elasticsearch-php](https://github.com/elastic/elasticsearch-php) library  or newer for Elasticsearch
+This will install Soupmix and all required dependencies. Soupmix requires PHP 5.5.0 or newer, [elasticsearch-php](https://github.com/elastic/elasticsearch-php) library or newer for Elasticsearch
 
 ## Documentation
 
-[API Documentation](https://github.com/mkorkmaz/soupmix/blob/master/docs/API_Documentation.md): See details about the db adapters functions:
+[API Documentation](https://github.com/soupmix/base/blob/master/docs/API_Documentation.md): See details about the db adapters functions:
 
 ## Usage
 ```
@@ -41,10 +41,10 @@ $adapter_config['options'] =[];
 $m=new Soupmix\Adapters\MongoDB($adapter_config);
 
 // Connect to Elasticsearch Service
-$adapter_config 			= [];
-$adapter_config['db_name'] 	= 'indexname';
-$adapter_config['hosts']	= ["127.0.0.1:9200"];
-$adapter_config['options'] 	= [];
+$adapter_config             = [];
+$adapter_config['db_name']  = 'indexname';
+$adapter_config['hosts']    = ["127.0.0.1:9200"];
+$adapter_config['options']  = [];
 
 $e=new Soupmix\Adapters\ElasticSearch($adapter_config);
 

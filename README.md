@@ -6,16 +6,6 @@
 
 Simple low level Elasticsearch adapter to handle CRUD operations written in PHP. This library does not provide any ORM or ODM. 
 
-## Adapters
-
-* **MongoDB: Exists**
-* **Elasticsearch: Exists**
-* Couchbase: Planned
-* MySQL: Planned
-* PostgreSQL: Planned
-
-
-
 
 ## Installation
 
@@ -33,7 +23,6 @@ This will install Soupmix and all required dependencies. Soupmix requires PHP 5.
 
 ## Usage
 ```
-
 
 // Connect to Elasticsearch Service
 $adapter_config             = [];
@@ -122,10 +111,6 @@ $docs = $e->find("users", $filter);
 
 
 ```
-
-
-
-
 
 
 

@@ -1,0 +1,24 @@
+{
+    "name": "soupmix/elasticsearch",
+    "type": "library",
+    "description": "Simple PHP Elasticsearch adapter to handle low level CRUD operations.",
+    "keywords": ["database","adapters","elasticsearch"],
+    "homepage": "https://github.com/soupmix/elasticsearch",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mehmet Korkmaz",
+            "email": "mehmet@mkorkmaz.com",
+            "homepage": "https://mkorkmaz.com"
+        }
+    ],
+    "require": {
+        "soupmix/base": "~0.1",
+        "elasticsearch/elasticsearch": "~2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Soupmix\\": "src/"
+        }
+    }
+}

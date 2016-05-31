@@ -1,0 +1,10 @@
+# MAC OS
+.DS_Store
+
+# Zend Studio
+.buildpath
+.project
+.settings
+
+# PhpStorm
+.idea

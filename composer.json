@@ -16,9 +16,18 @@
         "soupmix/base": "~0.1",
         "elasticsearch/elasticsearch": "~2.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^5.3"
+    },
     "autoload": {
         "psr-4": {
             "Soupmix\\": "src/"
         }
+    },
+    "scripts": {
+        "test": [
+            "php vendor/bin/phpunit"
+        ],
+        "phpunit": "php vendor/bin/phpunit"
     }
 }

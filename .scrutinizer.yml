@@ -7,3 +7,4 @@ checks:
 build:
   environment:
     php: '5.5.25'
+    elasticsearch: true

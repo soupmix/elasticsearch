@@ -60,12 +60,33 @@ class ElasticSearch implements Base
         $params = [];
         $params['index'] = $this->index;
         $params['type'] = $collection;
-        $params['id'] = $docId;
+
         try {
-            $result = $this->conn->get($params);
+            if (gettype($docId) == "array") {
+                $params['body'] = [
+                    'query' => [
+                        'filtered' => [
+                            'filter' => [
+                                'ids' => ['values'=>$docId]
+                            ],
+                        ],
+                    ],
+                ];
+                $results = $this->conn->search($params);
+                if ($results['hits']['total'] == 0) {
+                    return;
+                }
+                $result = [];
+                foreach ($results['hits']['hits'] as $item){
+                    $result[$item['_id']]=$item['_source'];
+                }
+                return $result;
+            } else {
+                $params['id'] = $docId;
+                $result = $this->conn->get($params);
+            }
             if ($result['found']) {
                 $result['_source']['_id'] = $result['_id'];
-
                 return $result['_source'];
             } else {
                 return;

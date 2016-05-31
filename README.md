@@ -33,12 +33,7 @@ This will install Soupmix and all required dependencies. Soupmix requires PHP 5.
 
 ## Usage
 ```
-// Connect to MongoDB Service
-$adapter_config = [];
-$adapter_config['db_name'] ='db_name';
-$adapter_config['connection_string']="mongodb://127.0.0.1";
-$adapter_config['options'] =[];
-$m=new Soupmix\Adapters\MongoDB($adapter_config);
+
 
 // Connect to Elasticsearch Service
 $adapter_config             = [];
@@ -46,7 +41,7 @@ $adapter_config['db_name']  = 'indexname';
 $adapter_config['hosts']    = ["127.0.0.1:9200"];
 $adapter_config['options']  = [];
 
-$e=new Soupmix\Adapters\ElasticSearch($adapter_config);
+$e=new Soupmix\ElasticSearch($adapter_config);
 
 $docs = [];
 $docs[] = [

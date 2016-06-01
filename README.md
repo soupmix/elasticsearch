@@ -34,9 +34,9 @@ $e=new Soupmix\ElasticSearch($adapter_config);
 
 $docs = [];
 $docs[] = [
-	"full_name" => "John Doe",
+    "full_name" => "John Doe",
       "age" => 33,
-      "email"	=> "johndoe@domain.com",
+      "email"    => "johndoe@domain.com",
       "siblings"=> [
         "male"=> [
           "count"=> 1,
@@ -45,13 +45,13 @@ $docs[] = [
         "female"=> [
           "count" => 1,
           "names" =>["Jane"]
-		]      
+        ]      
       ]
 ];
 $docs[] = [
-	"full_name" => "Jack Doe",
+    "full_name" => "Jack Doe",
       "age" => 38,
-      "email"	=> "jackdoe@domain.com",
+      "email"    => "jackdoe@domain.com",
       "siblings"=> [
         "male"=> [
           "count"=> 1,
@@ -60,14 +60,14 @@ $docs[] = [
         "female"=> [
           "count" => 1,
           "names" =>["Jane"]
-		]      
+        ]      
       ]
 ];
 
 $docs[] = [
-	"full_name" => "Jane Doe",
+    "full_name" => "Jane Doe",
       "age" => 29,
-      "email"	=> "janedoe@domain.com",
+      "email"    => "janedoe@domain.com",
       "siblings"=> [
         "male"=> [
           "count"=> 2,
@@ -76,14 +76,13 @@ $docs[] = [
         "female"=> [
           "count" => 0,
           "names" =>[]
-		]      
+        ]      
       ]
 ];
 
 foreach($docs as $doc){
-	// insert user into database
-	$mongo_user_id = $m->insert("users",$doc);
-	$es_user_id = $e->insert("users",$doc);
+    // insert user into database
+    $es_user_id = $e->insert("users",$doc);
 
 }
 // get user data using id

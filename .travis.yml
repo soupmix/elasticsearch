@@ -1,6 +1,8 @@
 language: php
 
 sudo: false
+services:
+  - elasticsearch
 
 php:
   - 7.0
@@ -10,7 +12,7 @@ php:
 
 before_script:
   - composer install -n
-
+  - sleep 10
 script:
   - vendor/bin/phpunit
 

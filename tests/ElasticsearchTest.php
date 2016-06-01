@@ -13,7 +13,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->client = new ElasticSearch([
-            'db_name' => 'tests',
+            'db_name' => 'test',
             'hosts'   => ['127.0.0.1:9200'],
         ]);
     }

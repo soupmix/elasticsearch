@@ -34,7 +34,7 @@ class ElasticSearch implements Base
     {
     }
 
-    public function createIndexes($collection, $config)
+    public function createIndexes($collection, $indexes)
     {
     }
 

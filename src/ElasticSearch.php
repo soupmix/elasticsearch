@@ -22,15 +22,15 @@ class ElasticSearch implements Base
         $this->conn = ElasticsearchLib\ClientBuilder::create()->setHosts($config['hosts'])->build();
     }
 
-    public function create($collection, $config)
+    public function create($collection)
     {
     }
 
-    public function drop($collection, $config)
+    public function drop($collection)
     {
     }
 
-    public function truncate($collection, $config)
+    public function truncate($collection)
     {
     }
 

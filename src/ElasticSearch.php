@@ -202,7 +202,7 @@ class ElasticSearch implements Base
                 $params['sort'] .= $sort_key.':'.$sort_dir;
             }
         }
-        if ($fields!='') {
+        if ($fields != null) {
             $params['fields'] = $fields;
             $return_type = 'fields';
         }
@@ -219,9 +219,9 @@ class ElasticSearch implements Base
             $return['hits']['hits'][0][$return_type]['_id'] = $return['hits']['hits'][0]['_id'];
             return ['total' => 1, 'data' => $return['hits']['hits'][0][$return_type]];
         }
-        $result = array();
+        $result = [];
         foreach ($return['hits']['hits'] as $item) {
-            if ($return_type=='fields') {
+            if (($return_type == 'fields') && ($fields != ['_id'])) {
                 foreach ($item[$return_type]as $k => $v) {
                     $item[$return_type][$k] = $v[0];
                 }

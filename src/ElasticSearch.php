@@ -28,6 +28,14 @@ class ElasticSearch implements Base
 
     public function drop($collection)
     {
+        $params = ['index' => $this->index];
+        try {
+            $this->conn->indices()->delete($params);
+        } catch (\Exception $e) {
+            // This ignore the error
+            return false;
+        }
+        return true;
     }
 
     public function truncate($collection)

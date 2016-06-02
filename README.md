@@ -12,7 +12,7 @@ Simple low level Elasticsearch adapter to handle CRUD operations written in PHP.
 It's recommended that you use [Composer](https://getcomposer.org/) to install Soupmix.
 
 ```bash
-$ composer require soupmix/elasticsearch "~.1"
+$ composer require soupmix/elasticsearch "~0.1"
 ```
 
 This will install Soupmix and all required dependencies. Soupmix requires PHP 5.5.0 or newer, [elasticsearch-php](https://github.com/elastic/elasticsearch-php) library or newer for Elasticsearch

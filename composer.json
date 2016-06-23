@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-        "soupmix/base": "~0.1",
+        "soupmix/base": "~0.5",
         "elasticsearch/elasticsearch": "~2.0"
     },
     "require-dev": {

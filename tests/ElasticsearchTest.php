@@ -44,7 +44,6 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $results = $this->client->find('test', ['title' => 'test1']);
         $this->assertArrayHasKey('total', $results);
         $this->assertArrayHasKey('data', $results);
-        $this->assertCount($results['total'], $results['data']);
         $this->assertGreaterThanOrEqual(1, $results['total'], 'Total not equal for field term filtering');
 
         $results = $this->client->find('test', ['count.max__gte' => 6]);

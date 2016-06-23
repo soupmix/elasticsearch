@@ -15,7 +15,7 @@ It's recommended that you use [Composer](https://getcomposer.org/) to install So
 $ composer require soupmix/elasticsearch "~0.5"
 ```
 
-This will install Soupmix and all required dependencies. Soupmix requires PHP 5.5.0 or newer, [elasticsearch-php](https://github.com/elastic/elasticsearch-php) library or newer for Elasticsearch
+This will install Soupmix and all required dependencies. Soupmix requires PHP 5.6.0 or newer, [elasticsearch-php](https://github.com/elastic/elasticsearch-php) library or newer for Elasticsearch
 
 ## Documentation
 

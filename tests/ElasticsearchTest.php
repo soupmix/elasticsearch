@@ -55,7 +55,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $this->assertGreaterThanOrEqual(1, $results['total'],
             'Total not greater than or equal to 2 on count.max__gte and count.max__gte filtering');
 
-        $results = $this->client->find('test', [['count.max__gte' => 6, 'count.min__gte' => 2], 'title' => 'test4']);
+        $results = $this->client->find('test', [[['count.max__gte' => 6], ['count.min__gte' => 2]], 'title' => 'test4']);
         $this->assertGreaterThanOrEqual(1, $results['total'],
             'Total not greater than or equal to 2 on count.max__gte and count.max__gte filtering');
 

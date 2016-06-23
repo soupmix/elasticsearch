@@ -103,7 +103,7 @@ $e->delete('users', $filter);
 
 
 // user's age lower_than_and_equal to 34 or greater_than_and_equal 36 but not 38
-$filter=[['age__lte'=>34,'age__gte'=>36],"age__not"=>38];
+$filter=[[['age__lte'=>34],['age__gte'=>36]],"age__not"=>38];
 
 //find users that has criteria encoded in $filter
 $docs = $e->find("users", $filter);

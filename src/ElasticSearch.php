@@ -11,6 +11,14 @@ class ElasticSearch implements Base
     public $conn = null;
     private $index = null;
 
+    private static $operators = [
+        'range'     => ['gt', 'gte', 'lt', 'lte'],
+        'standart'  => ['prefix', 'regexp', 'wildchard'],
+        'BooleanQueryLevel' => ['not'],
+        'special'   => ['in']
+    ];
+
+
     public function __construct($config)
     {
         $this->index = $config['db_name'];
@@ -239,84 +247,107 @@ class ElasticSearch implements Base
 
     public static function buildFilter($filter)
     {
-
-        $operators = [];
-        $operators['range'] = ['gt', 'gte', 'lt', 'lte'];
-        $operators['standart'] = ['prefix', 'regexp', 'wildchard'];
-        $operators['BooleanQueryLevel'] = ['not'];
-        $operators['special'] = ['in'];
-
         $filters = [];
         foreach ($filter as $key => $value) {
             $is_not = '';
             if (strpos($key, '__')!==false) {
-                preg_match('/__(.*?)$/i', $key, $matches);
-                $operator = $matches[1];
-                if (strpos($operator, '!')===0) {
-                    $operator = str_replace('!', '', $operator);
-                    $is_not = '_not';
+                $tmpFilters = self::buildFilterForKeys($key, $value, $is_not);
+                $filters = self::mergeFilters($filters, $tmpFilters);
+            } elseif ((strpos($key, '__') === false) && (is_array($value))) {
+                $filters['should'] = self::buildFilterForOR($value);
+            } else {
+                $filters['must'][] = ['term' => [$key => $value]];
+            }
+        }
+        return $filters;
+    }
+
+    private static function mergeFilters ($filters, $tmpFilters){
+        foreach ($tmpFilters as $fKey => $fVals) {
+            if (isset($filters[$fKey])) {
+                foreach ($fVals as $fVal) {
+                    $filters[$fKey][] = $fVal;
                 }
-                $key = str_replace($matches[0], '', $key);
-                foreach ($operators as $type => $possibilities) {
-                    if (in_array($operator, $possibilities)) {
+            } else {
+                $filters[$fKey] = $fVals;
+            }
+        }
+        return $filters;
+    }
+
+    private static function buildFilterForKeys($key, $value, $is_not)
+    {
+        $filters = [];
+        preg_match('/__(.*?)$/i', $key, $matches);
+        $operator = $matches[1];
+        if (strpos($operator, '!')===0) {
+            $operator = str_replace('!', '', $operator);
+            $is_not = '_not';
+        }
+        $key = str_replace($matches[0], '', $key);
+        foreach (self::$operators as $type => $possibilities) {
+            if (in_array($operator, $possibilities)) {
+                switch ($type) {
+                    case 'range':
+                        $filters['must'.$is_not][] = ['range' => [$key => [$operator => $value]]];
+                        break;
+                    case 'standart':
+                        $filters['must'.$is_not][] = [$type => [$key => $value]];
+                        break;
+                    case 'BooleanQueryLevel':
+                        switch ($operator) {
+                            case 'not':
+                                $filters['must_not'][] = ['term' => [$key => $value]];
+                                break;
+                        }
+                        break;
+                    case 'special':
+                        switch ($operator) {
+                            case 'in':
+                                $filters['must'.$is_not][] = ['terms' => [$key => $value]];
+                                break;
+                        }
+                        break;
+                }
+            }
+        }
+        return $filters;
+    }
+
+    private static function buildFilterForOR($orValues)
+    {
+        $filters = [];
+        foreach ($orValues as $orValue) {
+            $subKey = array_keys($orValue)[0];
+            $subValue = $orValue[$subKey];
+            if (strpos($subKey, '__') !== false) {
+                preg_match('/__(.*?)$/i', $subKey, $subMatches);
+                $subOperator = $subMatches[1];
+                if (strpos($subOperator, '!')===0) {
+                    $subOperator = str_replace('!', '', $subOperator);
+                }
+                $subKey = str_replace($subMatches[0], '', $subKey);
+                foreach (self::$operators as $type => $possibilities) {
+                    if (in_array($subOperator, $possibilities)) {
                         switch ($type) {
                             case 'range':
-                                $filters['must'.$is_not][] = ['range' => [$key => [$operator => $value]]];
+                                $filters[] = ['range' => [$subKey => [$subOperator => $subValue]]];
                                 break;
                             case 'standart':
-                                $filters['must'.$is_not][] = [$type => [$key => $value]];
-                                break;
-                            case 'BooleanQueryLevel':
-                                switch ($operator) {
-                                    case 'not':
-                                        $filters['must_not'][] = ['term' => [$key => $value]];
-                                        break;
-                                }
+                                $filters[] = [$type => [$subKey => $subValue]];
                                 break;
                             case 'special':
-                                switch ($operator) {
+                                switch ($subOperator) {
                                     case 'in':
-                                        $filters['must'.$is_not][] = ['terms' => [$key => $value]];
+                                        $filters[] = ['terms' => [$subKey => $subValue]];
                                         break;
                                 }
                                 break;
                         }
-                    }
-                }
-            } elseif (strpos($key, '__')===false && is_array($value)) {
-                foreach ($value as $skey => $svalue) {
-                    if (strpos($skey, '__')!==false) {
-                        preg_match('/__(.*?)$/i', $skey, $smatches);
-                        $soperator = $smatches[1];
-                        if (strpos($soperator, '!')===0) {
-                            $soperator = str_replace('!', '', $soperator);
-                        }
-                        $skey = str_replace($smatches[0], '', $skey);
-                        foreach ($operators as $type => $possibilities) {
-                            if (in_array($soperator, $possibilities)) {
-                                switch ($type) {
-                                    case 'range':
-                                        $filters['should'][] = ['range' => [$skey => [$soperator => $svalue]]];
-                                        break;
-                                    case 'standart':
-                                        $filters['should'][] = [$type => [$skey => $svalue]];
-                                        break;
-                                    case 'special':
-                                        switch ($soperator) {
-                                            case 'in':
-                                                $filters['should'][] = ['terms' => [$skey => $svalue]];
-                                                break;
-                                        }
-                                        break;
-                                }
-                            }
-                        }
-                    } else {
-                        $filters['should'][] = ['term' => [$skey => $svalue]];
                     }
                 }
             } else {
-                $filters['must'][] = ['term' => [$key => $value]];
+                $filters[] = ['term' => [$subKey => $subValue]];
             }
         }
         return $filters;

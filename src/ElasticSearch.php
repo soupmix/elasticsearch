@@ -240,9 +240,9 @@ class ElasticSearch implements Base
         return ['total' => $count['count'], 'data' => $result];
     }
 
-    public function query($query)
+    public function query($collection)
     {
-        // reserved        
+        return new ElasticSearchQueryBuilder($collection);
     }
 
     public static function buildFilter($filter)

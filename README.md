@@ -4,7 +4,7 @@
 [![Latest Stable Version](https://poser.pugx.org/soupmix/elasticsearch/v/stable)](https://packagist.org/packages/soupmix/elasticsearch) [![Total Downloads](https://poser.pugx.org/soupmix/elasticsearch/downloads)](https://packagist.org/packages/soupmix/elasticsearch) [![Latest Unstable Version](https://poser.pugx.org/soupmix/elasticsearch/v/unstable)](https://packagist.org/packages/soupmix/elasticsearch) [![License](https://poser.pugx.org/soupmix/elasticsearch/license)](https://packagist.org/packages/soupmix/elasticsearch)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/soupmix/elasticsearch/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/soupmix/elasticsearch/) [![Build Status](https://travis-ci.org/soupmix/elasticsearch.svg?branch=master)](https://travis-ci.org/soupmix/elasticsearch) [![Code Coverage](https://scrutinizer-ci.com/g/soupmix/elasticsearch/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/soupmix/elasticsearch/?branch=master)
 
-Simple low level Elasticsearch adapter to handle CRUD operations written in PHP. This library does not provide any ORM or ODM. 
+Simple ElasticSearch abstraction layer adapter to handle CRUD operations written in PHP. This library does not provide any ORM or ODM. 
 
 
 ## Installation
@@ -12,7 +12,7 @@ Simple low level Elasticsearch adapter to handle CRUD operations written in PHP.
 It's recommended that you use [Composer](https://getcomposer.org/) to install Soupmix.
 
 ```bash
-$ composer require soupmix/elasticsearch "~0.5"
+$ composer require soupmix/elasticsearch "~0.6"
 ```
 
 This will install Soupmix and all required dependencies. Soupmix requires PHP 5.6.0 or newer, [elasticsearch-php](https://github.com/elastic/elasticsearch-php) library or newer for Elasticsearch

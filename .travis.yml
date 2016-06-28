@@ -11,6 +11,7 @@ php:
 before_script:
   - composer install -n
   - sleep 10
+  - curl http://localhost:9200/
 
 script:
   - vendor/bin/phpunit

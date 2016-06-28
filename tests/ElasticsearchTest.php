@@ -14,7 +14,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
     {
         $this->client = new ElasticSearch([
             'db_name' => 'test',
-            'hosts'   => ['192.168.99.100:9200'],
+            'hosts'   => ['127.0.0.1:9200'],
         ]);
         $this->client->drop('test');
     }

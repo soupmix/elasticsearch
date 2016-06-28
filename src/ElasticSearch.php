@@ -30,7 +30,7 @@ class ElasticSearch implements Base
         $this->conn = ElasticsearchLib\ClientBuilder::create()->setHosts($config['hosts'])->build();
     }
 
-    public function create($collection)
+    public function create($collection, $fields)
     {
     }
 

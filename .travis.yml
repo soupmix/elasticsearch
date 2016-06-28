@@ -1,5 +1,7 @@
 language: php
 
+sudo: required
+
 jdk:
   - oraclejdk8
 
@@ -12,7 +14,7 @@ branches:
   except:
     - 0.4
 
-sudo: true
+
 
 
 php:

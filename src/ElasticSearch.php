@@ -158,7 +158,7 @@ class ElasticSearch implements Base
             $params['index'] = $this->index;
             $params['type'] = $collection;
             $params['fields'] = '_id';
-            $result = $this->find('users', $filter, ['_id'], null, 0, 1);
+            $result = $this->find($collection, $filter, ['_id'], null, 0, 1);
             if ($result['total']==1) {
                 $params = [];
                 $params['index'] = $this->index;

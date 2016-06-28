@@ -10,3 +10,6 @@
 .idea
 composer.lock
 vendor
+
+# PHPUnit
+build/*

@@ -9,11 +9,3 @@ checks:
 build:
   environment:
     php: '5.6'
-    elasticsearch: true
-  tests:
-    override:
-      -
-        command: 'phpunit --coverage-clover=.soupmix_coverage'
-        coverage:
-          file: '.soupmix_coverage'
-          format: 'clover'

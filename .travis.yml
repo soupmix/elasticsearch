@@ -1,40 +1,26 @@
 language: php
 
-sudo: required
+sudo: false
 
 jdk:
-  - oraclejdk8
-
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
-
-branches:
-  except:
-    - 0.4
-
-
+  - "oraclejdk8"
 
 
 php:
   - 7.0
   - 5.6
 
-env:
-  global:
-    - ES_VERSION="master"
-    - TEST_BUILD_REF="origin/master"
-    - ES_TEST_HOST=http://localhost:9200
-    - JAVA_HOME="/usr/lib/jvm/java-8-oracle/jre"
 
-before_install:
-  - sudo update-java-alternatives -s java-8-oracle
-  - ./travis/download_and_run_es.sh
+install:
+  - wget -O /tmp/es-snap.zip "https://oss.sonatype.org/service/local/artifact/maven/redirect?r=snapshots&g=org.elasticsearch.distribution.zip&a=elasticsearch&e=zip&v=5.0.0-SNAPSHOT"
+  - unzip /tmp/es-snap.zip -d /tmp/
+  - mv /tmp/elasticsearch-5.0.0-SNAPSHOT /tmp/elasticsearch
+  - /tmp/elasticsearch/bin/elasticsearch -E script.inline=true -E path.repo=/tmp -E repositories.url.allowed_urls='http://*' -E node.attr.testattr=test
 
 before_script:
   - composer install -n
   - sleep 10
+  - curl http://127.0.0.1:9200/
 
 script:
   - vendor/bin/phpunit

@@ -19,9 +19,7 @@ env:
   global:
     - WAIT_FOR_ES=1
   matrix:
-    - ES_VERSION=2.0.1
-    - ES_VERSION=2.1.2
-    - ES_VERSION=2.2.1
+    - ES_VERSION=2.3.3
 
 install:
   - mkdir /tmp/elasticsearch

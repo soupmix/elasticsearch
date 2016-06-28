@@ -22,7 +22,9 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
     public function testInsertGetDocument()
     {
         $docId = $this->client->insert('test', ['id' => 1, 'title' => 'test']);
+        var_dump($docId);
         $document = $this->client->get('test', $docId);
+        var_dump($document);
         $this->assertArrayHasKey('title', $document);
         $this->assertArrayHasKey('id', $document);
         $result = $this->client->delete('test', ['_id' => $docId]);

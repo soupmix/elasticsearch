@@ -14,7 +14,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
     {
         $this->client = new ElasticSearch([
             'db_name' => 'test',
-            'hosts'   => ['127.0.0.1:9200'],
+            'hosts'   => ['192.168.99.100:9200'],
         ]);
         $this->client->drop('test');
     }
@@ -66,20 +66,43 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
 
     public function testInsertUpdateGetDocument()
     {
-//        $docId = $this->client->insert('test', ['id' => 1, 'title' => 'test']);
-//        sleep(1); // waiting to be able to be searchable on elasticsearch.
-//        $modifiedCount = $this->client->update('test', ['title' => 'test'], ['title' => 'test2']);
-//        $this->assertTrue($modifiedCount >= 1);
-//        sleep(1); // waiting to be able to be searchable on elasticsearch.
-//        $document = $this->client->get('test', $docId);
-//        $this->assertArrayHasKey('title', $document);
-//        $this->assertEquals('test2', $document['title']);
-//
-//        $result = $this->client->delete('test', ['_id' => $docId]);
-//        $this->assertTrue($result == 1);
+        $docId = $this->client->insert('test', ['id' => 1, 'title' => 'test']);
+        sleep(1); // waiting to be able to be searchable on elasticsearch.
+        $modifiedCount = $this->client->update('test', ['title' => 'test'], ['title' => 'test2']);
+        $this->assertTrue($modifiedCount >= 1);
+        sleep(1); // waiting to be able to be searchable on elasticsearch.
+        $document = $this->client->get('test', $docId);
+        $this->assertArrayHasKey('title', $document);
+        $this->assertEquals('test2', $document['title']);
+
+        $result = $this->client->delete('test', ['_id' => $docId]);
+        $this->assertTrue($result == 1);
     }
 
-    public function bulkData()
+    public function testInsertUpdateMultipleDocument()
+    {
+        $docIds = array();
+        $docIds[] = $this->client->insert('test', ['id' => 1, 'title' => 'test']);
+        $docIds[] = $this->client->insert('test', ['id' => 2, 'title' => 'test']);
+        sleep(1); // waiting to be able to be searchable on elasticsearch.
+        $modifiedCount = $this->client->update('test', ['title' => 'test'], ['title' => 'test2']);
+        $this->assertTrue($modifiedCount >= 2);
+        sleep(1); // waiting to be able to be searchable on elasticsearch.
+        $documents = $this->client->get('test', $docIds);
+        foreach ($documents as $document) {
+            $this->assertArrayHasKey('title', $document);
+            $this->assertEquals('test2', $document['title']);
+        }
+        $result = $this->client->delete('test', ['title' => 'test2']);
+        $this->assertTrue($result == 1);
+    }
+
+    public function tearDown()
+    {
+        $this->client->drop('test');
+    }
+
+    private function bulkData()
     {
         return [
             ['id' => 1, 'date' => '2015-04-10 00:00:00', 'title' => 'test1', 'balance' => 100.0, 'count' => ['min' => 1, 'max' => 1]],

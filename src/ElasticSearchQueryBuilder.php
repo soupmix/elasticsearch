@@ -3,7 +3,7 @@
 namespace Soupmix;
 
 
-class ElasticSearchQueryBuilder extends AbstractQueryBuilder
+class ElasticSearchQueryBuilder
 {
     public function run(){
         // reserved;

@@ -3,7 +3,7 @@ language: php
 sudo: false
 
 jdk:
-  - "oraclejdk8"
+  - oraclejdk8
 
 
 php:

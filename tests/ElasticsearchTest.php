@@ -40,7 +40,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
                 $docIds[] = $docId;
             }
         }
-        sleep(1); // waiting to be able to be searchable on elasticsearch.
+        sleep(2); // waiting to be able to be searchable on elasticsearch.
         $results = $this->client->find('test', ['title' => 'test1']);
         $this->assertArrayHasKey('total', $results);
         $this->assertArrayHasKey('data', $results);

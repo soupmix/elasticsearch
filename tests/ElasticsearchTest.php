@@ -2,6 +2,7 @@
 namespace tests;
 
 use Soupmix\ElasticSearch;
+use Elasticsearch\ClientBuilder;
 
 class ElasticsearchTest extends \PHPUnit_Framework_TestCase
 {
@@ -12,10 +13,16 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        $this->client = new ElasticSearch([
+
+        $config =[
             'db_name' => 'test',
             'hosts'   => ['127.0.0.1:9200'],
-        ]);
+        ];
+
+        $client = ClientBuilder::create()->setHosts($config['hosts'])->build();
+
+
+        $this->client = new ElasticSearch($config, $client);
         $this->client->drop('test');
     }
 
@@ -67,10 +74,10 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
     public function testInsertUpdateGetDocument()
     {
         $docId = $this->client->insert('test', ['id' => 1, 'title' => 'test']);
-        sleep(1); // waiting to be able to be searchable on elasticsearch.
+        sleep(2); // waiting to be able to be searchable on elasticsearch.
         $modifiedCount = $this->client->update('test', ['title' => 'test'], ['title' => 'test2']);
         $this->assertTrue($modifiedCount >= 1);
-        sleep(1); // waiting to be able to be searchable on elasticsearch.
+        sleep(2); // waiting to be able to be searchable on elasticsearch.
         $document = $this->client->get('test', $docId);
         $this->assertArrayHasKey('title', $document);
         $this->assertEquals('test2', $document['title']);
@@ -84,7 +91,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $docIds = array();
         $docIds[] = $this->client->insert('test', ['id' => 1, 'title' => 'test']);
         $docIds[] = $this->client->insert('test', ['id' => 2, 'title' => 'test']);
-        sleep(1); // waiting to be able to be searchable on elasticsearch.
+        sleep(2); // waiting to be able to be searchable on elasticsearch.
         $modifiedCount = $this->client->update('test', ['title' => 'test'], ['title' => 'test2']);
         $this->assertTrue($modifiedCount >= 2);
         sleep(1); // waiting to be able to be searchable on elasticsearch.

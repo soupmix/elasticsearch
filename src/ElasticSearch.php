@@ -4,11 +4,11 @@ namespace Soupmix;
 /*
 Elasticsearch Adapter
 */
-Use Elasticsearch as ElasticsearchLib;
+Use Elasticsearch\Client;
 
 class ElasticSearch implements Base
 {
-    public $conn = null;
+    protected $conn = null;
     private $index = null;
 
     private static $operators = [
@@ -19,19 +19,16 @@ class ElasticSearch implements Base
     ];
 
 
-    public function __construct($config)
+    public function __construct($config, Client $client)
     {
         $this->index = $config['db_name'];
-        $this->connect($config);
+        $this->conn = $client;
     }
 
-    public function connect($config)
-    {
-        $this->conn = ElasticsearchLib\ClientBuilder::create()->setHosts($config['hosts'])->build();
-    }
 
-    public function create($collection, $fields)
+    public function getConnection()
     {
+        return $this->conn;
     }
 
     public function drop($collection)

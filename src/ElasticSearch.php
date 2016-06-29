@@ -31,6 +31,9 @@ class ElasticSearch implements Base
         return $this->conn;
     }
 
+    public function create($collection, $fields)
+    {
+    }
     public function drop($collection)
     {
         $params = ['index' => $this->index];

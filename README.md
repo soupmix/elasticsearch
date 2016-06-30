@@ -29,8 +29,10 @@ $adapter_config             = [];
 $adapter_config['db_name']  = 'indexname';
 $adapter_config['hosts']    = ["127.0.0.1:9200"];
 $adapter_config['options']  = [];
+$config['db_name'] = $adapter_config['db_name];
+$client = \Elasticsearch\ClientBuilder::create()->setHosts($adapter_config['hosts'])->build();
 
-$e=new Soupmix\ElasticSearch($adapter_config);
+$e=new Soupmix\ElasticSearch($config, $client);
 
 $docs = [];
 $docs[] = [

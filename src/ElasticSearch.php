@@ -6,7 +6,7 @@ Elasticsearch Adapter
 */
 Use Elasticsearch\Client;
 
-class ElasticSearch implements Base
+final class ElasticSearch implements Base
 {
     protected $conn = null;
     protected $index = null;
@@ -146,34 +146,34 @@ class ElasticSearch implements Base
             $params['id'] = $filter['_id'];
             try {
                 $result = $this->conn->delete($params);
-            } catch (\Exception $e) {
-                return 0;
-            }
-            if ($result['found']) {
-                return 1;
-            }
-        } else {
-            $params = [];
-            $params['index'] = $this->index;
-            $params['type'] = $collection;
-            $params['fields'] = '_id';
-            $result = $this->find($collection, $filter, ['_id'], null, 0, 1);
-            if ($result['total']==1) {
-                $params = [];
-                $params['index'] = $this->index;
-                $params['type'] = $collection;
-                $params['id'] = $result['data']['_id'];
-                try {
-                    $result = $this->conn->delete($params);
-                } catch (\Exception $e) {
-                    return 0;
-                }
                 if ($result['found']) {
                     return 1;
                 }
+                return 0;
+            } catch (\Exception $e) {
+                return 0;
             }
         }
-
+        $params = [];
+        $params['index'] = $this->index;
+        $params['type'] = $collection;
+        $params['fields'] = '_id';
+        $result = $this->find($collection, $filter, ['_id'], null, 0, 1);
+        if ($result['total']==1) {
+            $params = [];
+            $params['index'] = $this->index;
+            $params['type'] = $collection;
+            $params['id'] = $result['data']['_id'];
+            try {
+                $result = $this->conn->delete($params);
+                if ($result['found']) {
+                    return 1;
+                }
+                return 0;
+            } catch (\Exception $e) {
+                return 0;
+            }
+        }
         return 0;
     }
 

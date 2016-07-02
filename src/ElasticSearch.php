@@ -9,7 +9,8 @@ Use Elasticsearch\Client;
 class ElasticSearch implements Base
 {
     protected $conn = null;
-    private $index = null;
+    protected $index = null;
+    protected $esVersion = 1;
 
     private static $operators = [
         'range'     => ['gt', 'gte', 'lt', 'lte'],
@@ -18,11 +19,11 @@ class ElasticSearch implements Base
         'special'   => ['in']
     ];
 
-
     public function __construct($config, Client $client)
     {
         $this->index = $config['db_name'];
         $this->conn = $client;
+        $this->esVersion = $client->info()['version']['number'];
     }
 
 
@@ -126,12 +127,10 @@ class ElasticSearch implements Base
             $params['id'] = $doc['_id'];
             $params['body']['doc'] = $values;
             try {
-                $return = $this->conn->update($params);
-                if ($return['_shards']['successful']==1) {
-                    ++$modified_count;
-                }
+                $this->conn->update($params);
+                ++$modified_count;
             } catch (\Exception $e) {
-                // should we throw exception? Probably not.
+                // throw new \Exception($e->getMessage());
             }
         }
 

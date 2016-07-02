@@ -216,9 +216,6 @@ class ElasticSearch implements Base
         }
         $params['from'] = (int) $start;
         $params['size'] = (int) $limit;
-        if ($debug) {
-           return $params;
-        }
         $return = $this->conn->search($params);
         if ($return['hits']['total']==0) {
             return ['total' => 0, 'data' => null];

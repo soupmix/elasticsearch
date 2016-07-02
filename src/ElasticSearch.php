@@ -178,7 +178,7 @@ class ElasticSearch implements Base
         return 0;
     }
 
-    public function find($collection, $filters, $fields = null, $sort = null, $start = 0, $limit = 25, $debug = false)
+    public function find($collection, $filters, $fields = null, $sort = null, $start = 0, $limit = 25)
     {
         $return_type = '_source';
         $params = [];

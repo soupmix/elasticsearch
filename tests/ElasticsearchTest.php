@@ -20,8 +20,6 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         ];
 
         $client = ClientBuilder::create()->setHosts($config['hosts'])->build();
-
-
         $this->client = new ElasticSearch($config, $client);
         $this->client->drop('test');
     }

@@ -245,9 +245,9 @@ final class ElasticSearch implements Base
     {
         $filters = [];
         foreach ($filter as $key => $value) {
-            $is_not = '';
+            $isNot = '';
             if (strpos($key, '__')!==false) {
-                $tmpFilters = self::buildFilterForKeys($key, $value, $is_not);
+                $tmpFilters = self::buildFilterForKeys($key, $value, $isNot);
                 $filters = self::mergeFilters($filters, $tmpFilters);
             } elseif ((strpos($key, '__') === false) && (is_array($value))) {
                 $filters['should'] = self::buildFilterForOR($value);
@@ -271,24 +271,24 @@ final class ElasticSearch implements Base
         return $filters;
     }
 
-    private static function buildFilterForKeys($key, $value, $is_not)
+    private static function buildFilterForKeys($key, $value, $isNot)
     {
         $filters = [];
         preg_match('/__(.*?)$/i', $key, $matches);
         $operator = $matches[1];
         if (strpos($operator, '!')===0) {
             $operator = str_replace('!', '', $operator);
-            $is_not = '_not';
+            $isNot = '_not';
         }
         $key = str_replace($matches[0], '', $key);
         foreach (self::$operators as $type => $possibilities) {
             if (in_array($operator, $possibilities)) {
                 switch ($type) {
                     case 'range':
-                        $filters['must'.$is_not][] = ['range' => [$key => [$operator => $value]]];
+                        $filters['must'.$isNot][] = ['range' => [$key => [$operator => $value]]];
                         break;
                     case 'standart':
-                        $filters['must'.$is_not][] = [$type => [$key => $value]];
+                        $filters['must'.$isNot][] = [$type => [$key => $value]];
                         break;
                     case 'BooleanQueryLevel':
                         switch ($operator) {
@@ -300,7 +300,7 @@ final class ElasticSearch implements Base
                     case 'special':
                         switch ($operator) {
                             case 'in':
-                                $filters['must'.$is_not][] = ['terms' => [$key => $value]];
+                                $filters['must'.$isNot][] = ['terms' => [$key => $value]];
                                 break;
                         }
                         break;

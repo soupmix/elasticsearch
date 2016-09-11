@@ -12,6 +12,7 @@ addons:
 
 
 php:
+  - 7.1
   - 7.0
   - 5.6
 
@@ -34,10 +35,10 @@ before_script:
   - curl http://127.0.0.1:9200/
 
 script:
-  - vendor/bin/phpunit
+  - phpunit --coverage-clover build/logs/clover.xml
 
 after_script:
   - if [ $TRAVIS_PHP_VERSION = '7.0' ]; then php vendor/bin/coveralls; fi
-  - wget https://scrutinizer-ci.com/ocular.phar
-  - php ocular.phar code-coverage:upload --format=php-clover coverage.clover
-  - php vendor/bin/codacycoverage clover coverage.clover
+
+after_success:
+  - travis_retry php vendor/bin/coveralls -v

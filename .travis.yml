@@ -47,7 +47,6 @@ before_script:
   - curl http://127.0.0.1:9200/
 
 script:
-  - jdk_switcher use oraclejdk8
   - phpunit --coverage-clover build/logs/clover.xml
 
 after_script:

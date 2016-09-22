@@ -26,9 +26,12 @@ env:
 
 install:
   - mkdir /tmp/elasticsearch
-  - if [ $ES_VERSION = '1.7.5' ]; then wget -O - https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1 | /tmp/elasticsearch/bin/elasticsearch -d --path.data /tmp; fi
-  - if [ $ES_VERSION = '2.3.3' ]; then wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1 | /tmp/elasticsearch/bin/elasticsearch -d --path.data /tmp; fi
-  - if [ $ES_VERSION = '5.0.0-alpha' ]; then wget -O - https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1 | /tmp/elasticsearch/bin/elasticsearch -d -Epath.conf=/tmp; fi
+  - if [ $ES_VERSION = '1.7.5' ]; then wget -O - https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1; fi
+  - if [ $ES_VERSION = '2.3.3' ]; then wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1; fi
+  - if [ $ES_VERSION = '5.0.0-alpha' ]; then wget -O - https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1; fi
+  - if [ $ES_VERSION = '1.7.5' ]; then /tmp/elasticsearch/bin/elasticsearch -d --path.data /tmp; fi
+  - if [ $ES_VERSION = '2.3.3' ]; then /tmp/elasticsearch/bin/elasticsearch -d --path.data /tmp; fi
+  - if [ $ES_VERSION = '5.0.0-alpha' ]; then /tmp/elasticsearch/bin/elasticsearch -d -Epath.conf=/tmp; fi
 
 before_script:
   - composer install -n

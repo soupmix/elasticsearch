@@ -22,11 +22,14 @@ env:
   matrix:
     - ES_VERSION=1.7.5
     - ES_VERSION=2.3.3
+    - ES_VERSION=5.0.0-alpha5
 
 install:
   - mkdir /tmp/elasticsearch
   - if [ $ES_VERSION = '1.7.5' ]; then wget -O - https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1; fi
   - if [ $ES_VERSION = '2.3.3' ]; then wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1; fi
+  - if [ $ES_VERSION = '5.0.0-alpha' ]; then wget -O - https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1; fi
+
   - /tmp/elasticsearch/bin/elasticsearch -d --path.data /tmp
 
 before_script:

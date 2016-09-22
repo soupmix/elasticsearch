@@ -58,7 +58,9 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $results = $this->client->find('test', ['count.max__gte' => 6, 'count.min__gte' => 2]);
         $this->assertGreaterThanOrEqual(1, $results['total'],
             'Total not greater than or equal to 2 on count.max__gte and count.max__gte filtering');
-
+        $results = $this->client->find('test', ['count.max__gte' => 2],['title', 'balance']);
+        $this->assertArrayHasKey('title', $results['data'][0]);
+        $this->assertArrayNotHasKey('count', $results['data'][0]);
         $results = $this->client->find('test', [[['count.max__gte' => 6], ['count.min__gte' => 2]], 'title' => 'test4']);
         $this->assertGreaterThanOrEqual(1, $results['total'],
             'Total not greater than or equal to 2 on count.max__gte and count.max__gte filtering');
@@ -90,16 +92,16 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $docIds[] = $this->client->insert('test', ['id' => 1, 'title' => 'test']);
         $docIds[] = $this->client->insert('test', ['id' => 2, 'title' => 'test']);
         $this->client->getConnection()->indices()->refresh([]); // waiting to be able to be searchable on elasticsearch.
-        $modifiedCount = $this->client->update('test', ['title' => 'test'], ['title' => 'test2']);
+        $modifiedCount = $this->client->update('test', ['title' => 'test'], ['title' => 'test_2']);
         $this->assertTrue($modifiedCount >= 2);
         $this->client->getConnection()->indices()->refresh([]); // waiting to be able to be searchable on elasticsearch.
         $documents = $this->client->get('test', $docIds);
         foreach ($documents as $document) {
             $this->assertArrayHasKey('title', $document);
-            $this->assertEquals('test2', $document['title']);
+            $this->assertEquals('test_2', $document['title']);
         }
-        $result = $this->client->delete('test', ['title' => 'test2']);
-        $this->assertTrue($result == 1);
+        $result = $this->client->delete('test', ['title' => 'test_2']);
+        $this->assertEquals(2, $result);
     }
 
     public function tearDown()

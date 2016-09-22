@@ -10,7 +10,8 @@ final class ElasticSearch implements Base
 {
     protected $conn = null;
     protected $index = null;
-    protected $esVersion = 1;
+    protected $esMajorVersion = 2;
+    private static $filteredOrBool          = [1 => 'filtered', 2=> 'filtered', 5 => 'bool'];
 
     private static $operators = [
         'range'     => ['gt', 'gte', 'lt', 'lte'],
@@ -23,7 +24,7 @@ final class ElasticSearch implements Base
     {
         $this->index = $config['db_name'];
         $this->conn = $client;
-        $this->esVersion = $client->info()['version']['number'];
+        $this->esMajorVersion = substr($client->info()['version']['number'],0,1);
     }
 
 
@@ -82,7 +83,7 @@ final class ElasticSearch implements Base
             if (gettype($docId) == "array") {
                 $params['body'] = [
                     'query' => [
-                        'filtered' => [
+                        self::$filteredOrBool[$this->esMajorVersion] => [
                             'filter' => [
                                 'ids' => ['values'=>$docId]
                             ],
@@ -158,21 +159,25 @@ final class ElasticSearch implements Base
         $params['index'] = $this->index;
         $params['type'] = $collection;
         $params['fields'] = '_id';
-        $result = $this->find($collection, $filter, ['_id'], null, 0, 1);
-        if ($result['total']==1) {
+        $results = $this->find($collection, $filter, ['_id'], null, 0, 10000);
+        $deleteCount = 0;
+        if ($results['total']>0) {
             $params = [];
             $params['index'] = $this->index;
             $params['type'] = $collection;
-            $params['id'] = $result['data']['_id'];
-            try {
-                $result = $this->conn->delete($params);
-                if ($result['found']) {
-                    return 1;
+            foreach ($results['data'] as $result) {
+                $params['id'] = $result['_id'];
+                try {
+                    $result = $this->conn->delete($params);
+                    if ($result['found']) {
+                        $deleteCount++;
+                    }
+
+                } catch (\Exception $e) {
+
                 }
-                return 0;
-            } catch (\Exception $e) {
-                return 0;
             }
+            return $deleteCount;
         }
         return 0;
     }
@@ -187,7 +192,7 @@ final class ElasticSearch implements Base
             $filters = self::buildFilter($filters);
             $params['body'] = [
                 'query' => [
-                    'filtered' => [
+                    self::$filteredOrBool[$this->esMajorVersion] => [
                         'filter' => [
                             'bool' => $filters,
                         ],
@@ -196,10 +201,6 @@ final class ElasticSearch implements Base
             ];
         }
         $count = $this->conn->count($params);
-        if ($fields!==null) {
-            $params['fields'] = implode(',', $fields);
-            $return_type = 'fields';
-        }
         if ($sort!==null) {
             $params['sort'] = '';
             foreach ($sort as $sort_key => $sort_dir) {
@@ -210,12 +211,13 @@ final class ElasticSearch implements Base
             }
         }
         if ($fields != null) {
-            $params['fields'] = $fields;
-            $return_type = 'fields';
+            $params['_source'] = $fields;
         }
         $params['from'] = (int) $start;
         $params['size'] = (int) $limit;
+
         $return = $this->conn->search($params);
+
         if ($return['hits']['total']==0) {
             return ['total' => 0, 'data' => null];
         }
@@ -225,6 +227,7 @@ final class ElasticSearch implements Base
         }
         $result = [];
         foreach ($return['hits']['hits'] as $item) {
+
             if (($return_type == 'fields') && ($fields != ['_id'])) {
                 foreach ($item[$return_type]as $k => $v) {
                     $item[$return_type][$k] = $v[0];

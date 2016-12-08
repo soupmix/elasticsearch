@@ -23,7 +23,8 @@ env:
   matrix:
     - ES_VERSION=1.7.5
     - ES_VERSION=2.3.3
-    - ES_VERSION=5.0.0-alpha5
+    - ES_VERSION=2.4.0
+    - ES_VERSION=5.0.2
 
 install:
   - mkdir /tmp/elasticsearch
@@ -35,7 +36,11 @@ install:
     wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1;
     /tmp/elasticsearch/bin/elasticsearch -d --path.data /tmp;
     fi
-  - if [ $ES_VERSION = '5.0.0-alpha5' ]; then
+  - if [ $ES_VERSION = '2.4.0' ]; then
+    wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1;
+    /tmp/elasticsearch/bin/elasticsearch -d --path.data /tmp;
+    fi
+  - if [ $ES_VERSION = '5.0.2' ]; then
     java -version;
     wget -O - https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1;
     /tmp/elasticsearch/bin/elasticsearch -d -Epath.conf=/tmp;

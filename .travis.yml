@@ -42,7 +42,7 @@ install:
     fi
   - if [ $ES_VERSION = '5.0.2' ]; then
     java -version;
-    wget -O - https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1;
+    wget -O - https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1;
     /tmp/elasticsearch/bin/elasticsearch -d -Epath.conf=/tmp;
     fi
 

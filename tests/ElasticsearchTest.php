@@ -27,7 +27,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
     {
         $config =[
             'db_name' => 'test2',
-            'hosts'   => ['127.0.0.1:9200'],
+            'hosts'   => [['host' => '127.0.0.1', 'port' => 9200]],
         ];
 
         $client = ClientBuilder::create()->setHosts($config['hosts'])->build();
@@ -39,6 +39,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('id', $document);
         $result = $esClient->delete('test', ['_id' => $docId]);
         $this->assertTrue($result == 1);
+        $this->client->drop('test2');
     }
 
 

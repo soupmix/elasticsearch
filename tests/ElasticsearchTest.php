@@ -13,7 +13,6 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-
         $config =[
             'db_name' => 'test',
             'hosts'   => ['127.0.0.1:9200'],
@@ -23,6 +22,26 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $this->client = new ElasticSearch($config, $client);
         $this->client->drop('test');
     }
+
+    public function testSettingHostsAsArray()
+    {
+        $config =[
+            'db_name' => 'test2',
+            'hosts'   => [['host' => '127.0.0.1', 'port' => 9200]],
+        ];
+
+        $client = ClientBuilder::create()->setHosts($config['hosts'])->build();
+        $esClient = new ElasticSearch($config, $client);
+
+        $docId = $esClient->insert('test', ['id' => 1, 'title' => 'test']);
+        $document = $esClient->get('test', $docId);
+        $this->assertArrayHasKey('title', $document);
+        $this->assertArrayHasKey('id', $document);
+        $result = $esClient->delete('test', ['_id' => $docId]);
+        $this->assertTrue($result == 1);
+        $this->client->drop('test2');
+    }
+
 
     public function testInsertGetDocument()
     {
@@ -34,17 +53,30 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($result == 1);
     }
 
+    public function testGetInvalidDocumentTest()
+    {
+        $document = $this->client->get('test', 122333232323);
+        $this->assertNull($document);
+    }
+
+    public function testFindDocumentsWithSort()
+    {
+        $this->populateBulkData('test');
+        $results = $this->client->find('test', ['balance__gte' => 100], null, ['id' => 'asc']);
+        $this->assertEquals($results['data'][0]['id'], 1);
+    }
+
+    public function testFindDocumentsWithMultipleSort()
+    {
+        $this->populateBulkData('test');
+        $results = $this->client->find('test', ['balance__gte' => 100], null, ['balance' => 'asc', 'id' => 'desc']);
+        $this->assertEquals($results['data'][0]['id'], 3);
+    }
+
     public function testFindDocuments()
     {
         $docIds = [];
-        $data = $this->bulkData();
-        foreach ($data as $d) {
-            $docId = $this->client->insert('test', $d);
-            $this->assertNotNull($docId, 'Document could not inserted to ES while testing find');
-            if ($docId) {
-                $docIds[] = $docId;
-            }
-        }
+        $this->populateBulkData('test');
         $this->client->getConnection()->indices()->refresh([]); // waiting to be able to be searchable on elasticsearch.
         $results = $this->client->find('test', ['title' => 'test1']);
         $this->assertArrayHasKey('total', $results);
@@ -104,9 +136,37 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2, $result);
     }
 
-    public function tearDown()
+    public function testTruncateMethod()
+    {
+        $this->client->truncate('test');
+    }
+
+    public function testCreateMethod()
+    {
+        $this->client->create('test', ['id', 'date', 'title', 'balance', 'count']);
+    }
+
+    public function testCreateIndexesMethod()
+    {
+        $this->client->createIndexes('test', ['index1', 'index2']);
+    }
+
+    protected function tearDown()
     {
         $this->client->drop('test');
+    }
+
+    private function populateBulkData($collection)
+    {
+        $data = $this->bulkData();
+        foreach ($data as $d) {
+            $docId = $this->client->insert($collection, $d);
+            $this->assertNotNull($docId, 'Document could not inserted to ES while testing find');
+            if ($docId) {
+                $docIds[] = $docId;
+            }
+        }
+        sleep(1); // waiting for elasticsearch indexing process
     }
 
     private function bulkData()
@@ -114,7 +174,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         return [
             ['id' => 1, 'date' => '2015-04-10 00:00:00', 'title' => 'test1', 'balance' => 100.0, 'count' => ['min' => 1, 'max' => 1]],
             ['id' => 2, 'date' => '2015-04-11 00:00:00', 'title' => 'test2', 'balance' => 120.0, 'count' =>  ['min' => 1, 'max' => 1]],
-            ['id' => 3, 'date' => '2015-04-12 00:00:00', 'title' => 'test3', 'balance' => 101.5, 'count' =>  ['min' => 1, 'max' => 7]],
+            ['id' => 3, 'date' => '2015-04-12 00:00:00', 'title' => 'test3', 'balance' => 100.0, 'count' =>  ['min' => 1, 'max' => 7]],
             ['id' => 4, 'date' => '2015-04-12 00:00:00', 'title' => 'test4', 'balance' => 200.5, 'count' =>  ['min' => 3, 'max' => 6]],
             ['id' => 5, 'date' => '2015-04-13 00:00:00', 'title' => 'test5', 'balance' => 150.0, 'count' =>  ['min' => 1, 'max' => 5]],
             ['id' => 6, 'date' => '2015-04-14 00:00:00', 'title' => 'test6', 'balance' => 400.8, 'count' =>  ['min' => 1, 'max' => 4]],

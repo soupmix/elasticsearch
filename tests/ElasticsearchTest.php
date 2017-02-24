@@ -3,6 +3,8 @@ namespace tests;
 
 use Soupmix\ElasticSearch;
 use Elasticsearch\ClientBuilder;
+use Elasticsearch\Common\Exceptions\NoNodesAvailableException;
+use Elasticsearch\Common\Exceptions\Missing404Exception;
 
 class ElasticsearchTest extends \PHPUnit_Framework_TestCase
 {
@@ -21,6 +23,18 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $client = ClientBuilder::create()->setHosts($config['hosts'])->build();
         $this->client = new ElasticSearch($config, $client);
         $this->client->drop('test');
+    }
+
+    public function testInvalidConnection()
+    {
+        $this->expectException(NoNodesAvailableException::class);
+        $config =[
+            'db_name' => 'test1',
+            'hosts'   => [['host' => '127.0.0.1', 'port' => 5200]],
+        ];
+
+        $client = ClientBuilder::create()->setHosts($config['hosts'])->build();
+        $esClient = new ElasticSearch($config, $client);
     }
 
     public function testSettingHostsAsArray()
@@ -42,6 +56,13 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $this->client->drop('test2');
     }
 
+    public function testInvalidDocumentIndex()
+    {
+        $docId = $this->client->insert('test', null);
+        $this->assertNull($docId);
+        $docId = $this->client->insert('test', ['_id' => 1]);
+        $this->assertNull($docId);
+    }
 
     public function testInsertGetDocument()
     {
@@ -53,9 +74,11 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($result == 1);
     }
 
-    public function testGetInvalidDocumentTest()
+    public function testGetInvalidDocument()
     {
         $document = $this->client->get('test', 122333232323);
+        $this->assertNull($document);
+        $document = $this->client->get('test', [122333232323, 123344444]);
         $this->assertNull($document);
     }
 
@@ -127,6 +150,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $modifiedCount = $this->client->update('test', ['title' => 'test'], ['title' => 'test_2']);
         $this->assertTrue($modifiedCount >= 2);
         $this->client->getConnection()->indices()->refresh([]); // waiting to be able to be searchable on elasticsearch.
+        //Testing get multiple ids
         $documents = $this->client->get('test', $docIds);
         foreach ($documents as $document) {
             $this->assertArrayHasKey('title', $document);
@@ -134,6 +158,50 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         }
         $result = $this->client->delete('test', ['title' => 'test_2']);
         $this->assertEquals(2, $result);
+    }
+
+    public function testUpdateInvalidDocument()
+    {
+        // In fact, we expect return 0 as a result
+        // if ($docs['total']===0) {
+        //     return 0;
+        // }
+
+        $this->expectException(Missing404Exception::class);
+        $modifiedCount = $this->client->update('test', ['title' => 'invalid_title_value'], ['title' => 'test_2']);
+    }
+
+    public function testDeleteInvalidDocument()
+    {
+        $deletedCount = $this->client->delete('test', ['_id' => 'invalid_title_value']);
+        $this->assertEquals($deletedCount, 0);
+        $deletedCount = $this->client->delete('test', ['title' => 'invalid_title_value']);
+        $this->assertEquals($deletedCount, 0);
+    }
+
+    public function testInvalidIndexNameForFindMethod()
+    {
+        $this->expectException(Missing404Exception::class);
+        $results = $this->client->find('test', ['balance.max__gte' => 600]);
+    }
+
+    public function testNoResultFindMethod()
+    {
+        $data = $this->populateBulkData('test');
+        $results = $this->client->find('test', ['id' => 343344]);
+        $this->assertArrayHasKey('total', $results);
+        $this->assertArrayHasKey('data', $results);
+        $this->assertEquals(0, $results['total']);
+        $this->assertNull($results['data']);
+    }
+
+    public function testOneResultFindMethod()
+    {
+        $data = $this->populateBulkData('test');
+        $results = $this->client->find('test', ['id' => 1]);
+        $this->assertArrayHasKey('total', $results);
+        $this->assertArrayHasKey('data', $results);
+        $this->assertEquals(1, $results['total']);
     }
 
     public function testTruncateMethod()
@@ -161,7 +229,6 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $data = $this->bulkData();
         foreach ($data as $d) {
             $docId = $this->client->insert($collection, $d);
-            $this->assertNotNull($docId, 'Document could not inserted to ES while testing find');
             if ($docId) {
                 $docIds[] = $docId;
             }

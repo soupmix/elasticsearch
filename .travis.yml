@@ -10,37 +10,26 @@ addons:
   apt:
     packages:
       - oracle-java8-installer
-
-
+  code_climate:
+    repo_token: b0a53bb7d832d3d4fc6cc499e3709d2206238cb0ba4da93b4e97d1150f17d453
 php:
   - 7.1
   - 7.0
-  - 5.6
 
 env:
   global:
     - WAIT_FOR_ES=1
   matrix:
-    - ES_VERSION=1.7.5
-    - ES_VERSION=2.3.3
-    - ES_VERSION=2.4.0
-    - ES_VERSION=5.1.1
+    - ES_VERSION=2.4.4
+    - ES_VERSION=5.2.1
 
 install:
   - mkdir /tmp/elasticsearch
-  - if [ $ES_VERSION = '1.7.5' ]; then
-    wget -O - https://download.elastic.co/elasticsearch/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1;
-    /tmp/elasticsearch/bin/elasticsearch -d --path.data /tmp;
-    fi
-  - if [ $ES_VERSION = '2.3.3' ]; then
+  - if [ $ES_VERSION = '2.4.4' ]; then
     wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1;
     /tmp/elasticsearch/bin/elasticsearch -d --path.data /tmp;
     fi
-  - if [ $ES_VERSION = '2.4.0' ]; then
-    wget -O - https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/${ES_VERSION}/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1;
-    /tmp/elasticsearch/bin/elasticsearch -d --path.data /tmp;
-    fi
-  - if [ $ES_VERSION = '5.1.1' ]; then
+  - if [ $ES_VERSION = '5.2.1' ]; then
     java -version;
     wget -O - https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1;
     /tmp/elasticsearch/bin/elasticsearch -d -Epath.conf=/tmp;
@@ -56,7 +45,8 @@ script:
   - phpunit --coverage-clover build/logs/clover.xml
 
 after_script:
-  - if [ $TRAVIS_PHP_VERSION = '7.0' ]; then php vendor/bin/coveralls; fi
+  - if [ $TRAVIS_PHP_VERSION = '7.1' ]; then php vendor/bin/coveralls; fi
 
 after_success:
   - travis_retry php vendor/bin/coveralls -v
+  - vendor/bin/test-reporter

@@ -11,11 +11,11 @@ final class ElasticSearch implements Base
     protected $conn = null;
     protected $index = null;
     protected $esMajorVersion = 2;
-    private static $filteredOrBool          = [1 => 'filtered', 2=> 'filtered', 5 => 'bool'];
+    private static $filteredOrBool = [2 => 'filtered', 5 => 'bool'];
 
     private static $operators = [
         'range'     => ['gt', 'gte', 'lt', 'lte'],
-        'standart'  => ['prefix', 'regexp', 'wildchard'],
+        'standart'  => ['prefix', 'regexp', 'wildcard'],
         'BooleanQueryLevel' => ['not'],
         'special'   => ['in']
     ];
@@ -33,14 +33,31 @@ final class ElasticSearch implements Base
         return $this->conn;
     }
 
-    public function create($collection, $fields)
-    {
-    }
-    public function drop($collection)
+    public function create(string $collection, array $fields)
     {
         $params = ['index' => $this->index];
         try {
-            $this->conn->indices()->delete($params);
+            if (!$this->conn->indices()->exists($params)) {
+                $this->conn->indices()->create($params);
+            }
+            $params['type'] = $collection;
+            $params['body'] = [$collection => ['properties' => $fields]];
+            $this->conn->indices()->putMapping($params);
+        } catch (\Exception $e) {
+            // This ignore the error
+            return false;
+        }
+        return true;
+    }
+    public function drop(string $collection)
+    {
+        $params = ['index' => $this->index, 'type' => $collection];
+        try {
+            //$this->truncate($collection);
+            //$mappingData = $this->conn->indices()->getMapping($params);
+            //$mapping = $mappingData[$this->index]['mappings'][$collection];
+            //$ma = $this->conn->indices()->deleteMapping($params);
+
         } catch (\Exception $e) {
             // This ignore the error
             return false;
@@ -48,15 +65,17 @@ final class ElasticSearch implements Base
         return true;
     }
 
-    public function truncate($collection)
+    public function truncate(string $collection)
     {
+
+        $params = ['index' => $this->index, 'type' => $collection, 'body' => ['query' => ['bool' => ['match_all' => []]]]];
+        //$truncate = $this->conn->deleteByQuery($params);
     }
 
-    public function createIndexes($collection, $indexes)
-    {
-    }
+    public function createIndexes(string $collection, array $indexes)
+    {}
 
-    public function insert($collection, $values)
+    public function insert(string $collection, array $values)
     {
         $params = [];
         $params['body'] = $values;
@@ -73,25 +92,25 @@ final class ElasticSearch implements Base
         }
     }
 
-    public function get($collection, $docId)
+    public function get(string $collection, $docId)
     {
         $params = [];
         $params['index'] = $this->index;
         $params['type'] = $collection;
 
         try {
-            if (gettype($docId) == "array") {
+            if (is_array($docId)) {
                 $params['body'] = [
                     'query' => [
                         self::$filteredOrBool[$this->esMajorVersion] => [
                             'filter' => [
-                                'ids' => ['values'=>$docId]
+                                'ids' => ['values' => $docId]
                             ],
                         ],
                     ],
                 ];
                 $results = $this->conn->search($params);
-                if ($results['hits']['total'] == 0) {
+                if ($results['hits']['total'] === 0) {
                     return;
                 }
                 $result = [];
@@ -114,10 +133,10 @@ final class ElasticSearch implements Base
         }
     }
 
-    public function update($collection, $filter, $values)
+    public function update(string $collection, array $filter, array $values)
     {
         $docs = $this->find($collection, $filter, ['_id']);
-        if ($docs['total']===0) {
+        if ($docs['total'] ===0) {
             return 0;
         }
         $params = [];
@@ -138,7 +157,7 @@ final class ElasticSearch implements Base
         return $modified_count;
     }
 
-    public function delete($collection, $filter)
+    public function delete(string $collection, array $filter)
     {
         if (isset($filter['_id'])) {
             $params = [];
@@ -182,7 +201,14 @@ final class ElasticSearch implements Base
         return 0;
     }
 
-    public function find($collection, $filters, $fields = null, $sort = null, $start = 0, $limit = 25)
+    public function find(
+        string $collection,
+            array $filters,
+            array $fields = null,
+            array $sort = null,
+            int $start = 0,
+            int$limit = 25
+    )
     {
         $return_type = '_source';
         $params = [];
@@ -201,16 +227,16 @@ final class ElasticSearch implements Base
             ];
         }
         $count = $this->conn->count($params);
-        if ($sort!==null) {
+        if ($sort !== null) {
             $params['sort'] = '';
             foreach ($sort as $sort_key => $sort_dir) {
-                if ($params['sort']!='') {
-                    $params['sort'] .= ',';
+                if (!empty($params['sort'])) {
+                    $params['sort'] .= ', ';
                 }
-                $params['sort'] .= $sort_key.':'.$sort_dir;
+                $params['sort'] .= $sort_key . ':'.$sort_dir;
             }
         }
-        if ($fields != null) {
+        if ($fields !== null) {
             $params['_source'] = $fields;
         }
         $params['from'] = (int) $start;
@@ -218,17 +244,17 @@ final class ElasticSearch implements Base
 
         $return = $this->conn->search($params);
 
-        if ($return['hits']['total']==0) {
+        if ($return['hits']['total'] === 0) {
             return ['total' => 0, 'data' => null];
         }
-        elseif ($limit==1) {
+        elseif ($limit === 1) {
             $return['hits']['hits'][0][$return_type]['_id'] = $return['hits']['hits'][0]['_id'];
             return ['total' => 1, 'data' => $return['hits']['hits'][0][$return_type]];
         }
         $result = [];
         foreach ($return['hits']['hits'] as $item) {
 
-            if (($return_type == 'fields') && ($fields != ['_id'])) {
+            if (($return_type == 'fields') && ($fields !== ['_id'])) {
                 foreach ($item[$return_type]as $k => $v) {
                     $item[$return_type][$k] = $v[0];
                 }
@@ -239,12 +265,12 @@ final class ElasticSearch implements Base
         return ['total' => $count['count'], 'data' => $result];
     }
 
-    public function query($collection)
+    public function query(string $collection)
     {
         return new ElasticSearchQueryBuilder($collection);
     }
 
-    public static function buildFilter($filter)
+    public static function buildFilter(array $filter)
     {
         $filters = [];
         foreach ($filter as $key => $value) {
@@ -252,7 +278,7 @@ final class ElasticSearch implements Base
             if (strpos($key, '__')!==false) {
                 $tmpFilters = self::buildFilterForKeys($key, $value, $isNot);
                 $filters = self::mergeFilters($filters, $tmpFilters);
-            } elseif ((strpos($key, '__') === false) && (is_array($value))) {
+            } elseif ((strpos($key, '__') === false) && is_array($value)) {
                 $filters['should'] = self::buildFilterForOR($value);
             } else {
                 $filters['must'][] = ['term' => [$key => $value]];
@@ -261,7 +287,7 @@ final class ElasticSearch implements Base
         return $filters;
     }
 
-    private static function mergeFilters ($filters, $tmpFilters){
+    private static function mergeFilters (array $filters, array $tmpFilters){
         foreach ($tmpFilters as $fKey => $fVals) {
             if (isset($filters[$fKey])) {
                 foreach ($fVals as $fVal) {
@@ -274,10 +300,10 @@ final class ElasticSearch implements Base
         return $filters;
     }
 
-    private static function buildFilterForKeys($key, $value, $isNot)
+    private static function buildFilterForKeys(string $key, $value, string $isNot)
     {
         $filters = [];
-        preg_match('/__(.*?)$/i', $key, $matches);
+        preg_match('/__(.*?)$/', $key, $matches);
         $operator = $matches[1];
         if (strpos($operator, '!')===0) {
             $operator = str_replace('!', '', $operator);
@@ -285,12 +311,12 @@ final class ElasticSearch implements Base
         }
         $key = str_replace($matches[0], '', $key);
         foreach (self::$operators as $type => $possibilities) {
-            if (in_array($operator, $possibilities)) {
+            if (in_array($operator, $possibilities, true)) {
                 switch ($type) {
                     case 'range':
                         $filters['must'.$isNot][] = ['range' => [$key => [$operator => $value]]];
                         break;
-                    case 'standart':
+                    case 'standard':
                         $filters['must'.$isNot][] = [$type => [$key => $value]];
                         break;
                     case 'BooleanQueryLevel':
@@ -313,26 +339,26 @@ final class ElasticSearch implements Base
         return $filters;
     }
 
-    private static function buildFilterForOR($orValues)
+    private static function buildFilterForOR(array $orValues)
     {
         $filters = [];
         foreach ($orValues as $orValue) {
             $subKey = array_keys($orValue)[0];
             $subValue = $orValue[$subKey];
             if (strpos($subKey, '__') !== false) {
-                preg_match('/__(.*?)$/i', $subKey, $subMatches);
+                preg_match('/__(.*?)$/', $subKey, $subMatches);
                 $subOperator = $subMatches[1];
                 if (strpos($subOperator, '!')===0) {
                     $subOperator = str_replace('!', '', $subOperator);
                 }
                 $subKey = str_replace($subMatches[0], '', $subKey);
                 foreach (self::$operators as $type => $possibilities) {
-                    if (in_array($subOperator, $possibilities)) {
+                    if (in_array($subOperator, $possibilities, true)) {
                         switch ($type) {
                             case 'range':
                                 $filters[] = ['range' => [$subKey => [$subOperator => $subValue]]];
                                 break;
-                            case 'standart':
+                            case 'standard':
                                 $filters[] = [$type => [$subKey => $subValue]];
                                 break;
                             case 'special':

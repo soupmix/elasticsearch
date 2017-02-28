@@ -6,7 +6,7 @@ use Elasticsearch\ClientBuilder;
 use Elasticsearch\Common\Exceptions\NoNodesAvailableException;
 use Elasticsearch\Common\Exceptions\Missing404Exception;
 
-class ElasticsearchTest extends \PHPUnit_Framework_TestCase
+class ElasticsearchTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Soupmix\ElasticSearch $client
@@ -21,8 +21,13 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         ];
 
         $client = ClientBuilder::create()->setHosts($config['hosts'])->build();
+        if ($client->indices()->exists(['index' => 'test'])) {
+            $client->indices()->delete(['index' => 'test']);
+        }
+        if ($client->indices()->exists(['index' => 'test2'])) {
+            $client->indices()->delete(['index' => 'test2']);
+        }
         $this->client = new ElasticSearch($config, $client);
-        $this->client->drop('test');
     }
 
     public function testInvalidConnection()
@@ -47,15 +52,18 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
         $client = ClientBuilder::create()->setHosts($config['hosts'])->build();
         $esClient = new ElasticSearch($config, $client);
 
-        $docId = $esClient->insert('test', ['id' => 1, 'title' => 'test']);
+        $docId = $esClient->insert('test', ['doc_id' => 1, 'title' => 'test']);
         $document = $esClient->get('test', $docId);
         $this->assertArrayHasKey('title', $document);
-        $this->assertArrayHasKey('id', $document);
+        $this->assertArrayHasKey('doc_id', $document);
         $result = $esClient->delete('test', ['_id' => $docId]);
         $this->assertTrue($result == 1);
         $this->client->drop('test2');
     }
 
+    /**
+     * @expectedException \TypeError
+     */
     public function testInvalidDocumentIndex()
     {
         $docId = $this->client->insert('test', null);
@@ -66,10 +74,10 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
 
     public function testInsertGetDocument()
     {
-        $docId = $this->client->insert('test', ['id' => 1, 'title' => 'test']);
+        $docId = $this->client->insert('test', ['doc_id' => 1, 'title' => 'test']);
         $document = $this->client->get('test', $docId);
         $this->assertArrayHasKey('title', $document);
-        $this->assertArrayHasKey('id', $document);
+        $this->assertArrayHasKey('doc_id', $document);
         $result = $this->client->delete('test', ['_id' => $docId]);
         $this->assertTrue($result == 1);
     }
@@ -85,15 +93,16 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
     public function testFindDocumentsWithSort()
     {
         $this->populateBulkData('test');
-        $results = $this->client->find('test', ['balance__gte' => 100], null, ['id' => 'asc']);
-        $this->assertEquals($results['data'][0]['id'], 1);
+        $results = $this->client->find('test', ['balance__gte' => 100], null, ['doc_id' => 'asc']);
+        var_dump($results);
+        $this->assertEquals(1, $results['data'][0]['doc_id']);
     }
 
     public function testFindDocumentsWithMultipleSort()
     {
         $this->populateBulkData('test');
-        $results = $this->client->find('test', ['balance__gte' => 100], null, ['balance' => 'asc', 'id' => 'desc']);
-        $this->assertEquals($results['data'][0]['id'], 3);
+        $results = $this->client->find('test', ['balance__gte' => 100], null, ['balance' => 'asc', 'doc_id' => 'desc']);
+        $this->assertEquals(3, $results['data'][0]['doc_id']);
     }
 
     public function testFindDocuments()
@@ -128,7 +137,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
 
     public function testInsertUpdateGetDocument()
     {
-        $docId = $this->client->insert('test', ['id' => 1, 'title' => 'test']);
+        $docId = $this->client->insert('test', ['doc_id' => 1, 'title' => 'test']);
         $this->client->getConnection()->indices()->refresh([]); // waiting to be able to be searchable on elasticsearch.
         $modifiedCount = $this->client->update('test', ['title' => 'test'], ['title' => 'test2']);
         $this->assertTrue($modifiedCount >= 1);
@@ -144,8 +153,8 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
     public function testInsertUpdateMultipleDocument()
     {
         $docIds = array();
-        $docIds[] = $this->client->insert('test', ['id' => 1, 'title' => 'test']);
-        $docIds[] = $this->client->insert('test', ['id' => 2, 'title' => 'test']);
+        $docIds[] = $this->client->insert('test', ['doc_id' => 1, 'title' => 'test']);
+        $docIds[] = $this->client->insert('test', ['doc_id' => 2, 'title' => 'test']);
         $this->client->getConnection()->indices()->refresh([]); // waiting to be able to be searchable on elasticsearch.
         $modifiedCount = $this->client->update('test', ['title' => 'test'], ['title' => 'test_2']);
         $this->assertTrue($modifiedCount >= 2);
@@ -188,7 +197,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
     public function testNoResultFindMethod()
     {
         $data = $this->populateBulkData('test');
-        $results = $this->client->find('test', ['id' => 343344]);
+        $results = $this->client->find('test', ['doc_id' => 343344]);
         $this->assertArrayHasKey('total', $results);
         $this->assertArrayHasKey('data', $results);
         $this->assertEquals(0, $results['total']);
@@ -198,7 +207,7 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
     public function testOneResultFindMethod()
     {
         $data = $this->populateBulkData('test');
-        $results = $this->client->find('test', ['id' => 1]);
+        $results = $this->client->find('test', ['doc_id' => 1]);
         $this->assertArrayHasKey('total', $results);
         $this->assertArrayHasKey('data', $results);
         $this->assertEquals(1, $results['total']);
@@ -211,7 +220,13 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateMethod()
     {
-        $this->client->create('test', ['id', 'date', 'title', 'balance', 'count']);
+        $this->client->create('test', [
+            'doc_id' => ['type' => 'long'],
+            'date' => ['type'=>'date', 'format' => 'yyyy-MM-dd HH:mm:ss'],
+            'title' => ['type'=>'keyword'],
+            'balance' => ['type' => 'double'],
+            'count' => ['type' => 'long']
+        ]);
     }
 
     public function testCreateIndexesMethod()
@@ -239,16 +254,16 @@ class ElasticsearchTest extends \PHPUnit_Framework_TestCase
     private function bulkData()
     {
         return [
-            ['id' => 1, 'date' => '2015-04-10 00:00:00', 'title' => 'test1', 'balance' => 100.0, 'count' => ['min' => 1, 'max' => 1]],
-            ['id' => 2, 'date' => '2015-04-11 00:00:00', 'title' => 'test2', 'balance' => 120.0, 'count' =>  ['min' => 1, 'max' => 1]],
-            ['id' => 3, 'date' => '2015-04-12 00:00:00', 'title' => 'test3', 'balance' => 100.0, 'count' =>  ['min' => 1, 'max' => 7]],
-            ['id' => 4, 'date' => '2015-04-12 00:00:00', 'title' => 'test4', 'balance' => 200.5, 'count' =>  ['min' => 3, 'max' => 6]],
-            ['id' => 5, 'date' => '2015-04-13 00:00:00', 'title' => 'test5', 'balance' => 150.0, 'count' =>  ['min' => 1, 'max' => 5]],
-            ['id' => 6, 'date' => '2015-04-14 00:00:00', 'title' => 'test6', 'balance' => 400.8, 'count' =>  ['min' => 1, 'max' => 4]],
-            ['id' => 7, 'date' => '2015-04-15 00:00:00', 'title' => 'test7', 'balance' => 240.0, 'count' =>  ['min' => 1, 'max' => 4]],
-            ['id' => 8, 'date' => '2015-04-20 00:00:00', 'title' => 'test8', 'balance' => 760.0, 'count' =>  ['min' => 1, 'max' => 5]],
-            ['id' => 9, 'date' => '2015-04-20 00:00:00', 'title' => 'test9', 'balance' => 50.0, 'count' =>  ['min' => 1, 'max' => 2]],
-            ['id' => 10, 'date' => '2015-04-21 00:00:00', 'title' => 'test0', 'balance' => 55.5, 'count' =>  ['min' => 1, 'max' => 2]],
+            ['doc_id' => 1, 'date' => '2015-04-10 00:00:00', 'title' => 'test1', 'balance' => 100.0, 'count' => ['min' => 1, 'max' => 1]],
+            ['doc_id' => 2, 'date' => '2015-04-11 00:00:00', 'title' => 'test2', 'balance' => 120.0, 'count' =>  ['min' => 1, 'max' => 1]],
+            ['doc_id' => 3, 'date' => '2015-04-12 00:00:00', 'title' => 'test3', 'balance' => 100.0, 'count' =>  ['min' => 1, 'max' => 7]],
+            ['doc_id' => 4, 'date' => '2015-04-12 00:00:00', 'title' => 'test4', 'balance' => 200.5, 'count' =>  ['min' => 3, 'max' => 6]],
+            ['doc_id' => 5, 'date' => '2015-04-13 00:00:00', 'title' => 'test5', 'balance' => 150.0, 'count' =>  ['min' => 1, 'max' => 5]],
+            ['doc_id' => 6, 'date' => '2015-04-14 00:00:00', 'title' => 'test6', 'balance' => 400.8, 'count' =>  ['min' => 1, 'max' => 4]],
+            ['doc_id' => 7, 'date' => '2015-04-15 00:00:00', 'title' => 'test7', 'balance' => 240.0, 'count' =>  ['min' => 1, 'max' => 4]],
+            ['doc_id' => 8, 'date' => '2015-04-20 00:00:00', 'title' => 'test8', 'balance' => 760.0, 'count' =>  ['min' => 1, 'max' => 5]],
+            ['doc_id' => 9, 'date' => '2015-04-20 00:00:00', 'title' => 'test9', 'balance' => 50.0, 'count' =>  ['min' => 1, 'max' => 2]],
+            ['doc_id' => 10, 'date' => '2015-04-21 00:00:00', 'title' => 'test0', 'balance' => 55.5, 'count' =>  ['min' => 1, 'max' => 2]],
         ];
     }
 }

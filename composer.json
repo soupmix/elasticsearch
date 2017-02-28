@@ -13,13 +13,14 @@
         }
     ],
     "require": {
-        "soupmix/base": "~0.7.9",
-        "elasticsearch/elasticsearch": "~2.2"
+        "soupmix/base": "dev-master",
+        "elasticsearch/elasticsearch": "~5.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.7.0",
-        "satooshi/php-coveralls": "~1.0",
-        "phpunit/phpcov": "^3.1.0"
+        "phpunit/phpunit": "^6.0",
+        "satooshi/php-coveralls": "~1.0.1",
+        "phpunit/phpcov": "^4.0",
+        "codeclimate/php-test-reporter": "dev-master"
     },
     "autoload": {
         "psr-4": {

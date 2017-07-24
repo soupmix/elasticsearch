@@ -79,7 +79,7 @@ class ElasticsearchTest extends \PHPUnit\Framework\TestCase
         $this->assertArrayHasKey('title', $document);
         $this->assertArrayHasKey('doc_id', $document);
         $result = $this->client->delete('test', ['_id' => $docId]);
-        $this->assertTrue($result == 1);
+        $this->assertEquals($result, 1);
     }
 
     public function testGetInvalidDocument()
@@ -94,7 +94,6 @@ class ElasticsearchTest extends \PHPUnit\Framework\TestCase
     {
         $this->populateBulkData('test');
         $results = $this->client->find('test', ['balance__gte' => 100], null, ['doc_id' => 'asc']);
-        var_dump($results);
         $this->assertEquals(1, $results['data'][0]['doc_id']);
     }
 
@@ -131,7 +130,7 @@ class ElasticsearchTest extends \PHPUnit\Framework\TestCase
 
         foreach ($docIds as $docId) {
             $result = $this->client->delete('test', ['_id' => $docId]);
-            $this->assertTrue($result == 1);
+            $this->assertEquals($result, 1);
         }
     }
 
@@ -206,7 +205,7 @@ class ElasticsearchTest extends \PHPUnit\Framework\TestCase
 
     public function testOneResultFindMethod()
     {
-        $data = $this->populateBulkData('test');
+        $this->populateBulkData('test');
         $results = $this->client->find('test', ['doc_id' => 1]);
         $this->assertArrayHasKey('total', $results);
         $this->assertArrayHasKey('data', $results);
@@ -215,24 +214,31 @@ class ElasticsearchTest extends \PHPUnit\Framework\TestCase
 
     public function testTruncateMethod()
     {
+        $this->populateBulkData('test');
+        sleep(2);
+        $this->assertEquals(10, $this->client->getConnection()->count(['index'=>'test','type'=>'test'])['count']);
+
         $this->client->truncate('test');
+        sleep(2);
+        $this->assertEquals(0, $this->client->getConnection()->count(['index'=>'test','type'=>'test'])['count']);
+
     }
 
     public function testCreateMethod()
     {
-        $this->client->create('test', [
+        $this->client->create('test_type', [
             'doc_id' => ['type' => 'long'],
             'date' => ['type'=>'date', 'format' => 'yyyy-MM-dd HH:mm:ss'],
             'title' => ['type'=>'keyword'],
             'balance' => ['type' => 'double'],
             'count' => ['type' => 'long']
         ]);
+        sleep(2);
+        $indices = $this->client->getConnection()->indices()->getMapping(['index'=>'test']);
+        $this->assertArrayHasKey('test_type', $indices['test']['mappings']);
+
     }
 
-    public function testCreateIndexesMethod()
-    {
-        $this->client->createIndexes('test', ['index1', 'index2']);
-    }
 
     protected function tearDown()
     {
@@ -248,7 +254,7 @@ class ElasticsearchTest extends \PHPUnit\Framework\TestCase
                 $docIds[] = $docId;
             }
         }
-        sleep(1); // waiting for elasticsearch indexing process
+        sleep(2); // waiting for elasticsearch indexing process
     }
 
     private function bulkData()

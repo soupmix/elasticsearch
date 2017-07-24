@@ -13,7 +13,7 @@
         }
     ],
     "require": {
-        "soupmix/base": "dev-master",
+        "soupmix/base": "^0.8",
         "elasticsearch/elasticsearch": "~5.0"
     },
     "require-dev": {
@@ -23,14 +23,9 @@
         "codeclimate/php-test-reporter": "dev-master"
     },
     "autoload": {
-        "psr-4": {
-            "Soupmix\\": "src/"
-        }
-    },
-    "scripts": {
-        "test": [
-            "php vendor/bin/phpunit"
-        ],
-        "phpunit": "php vendor/bin/phpunit"
+        "classmap": [
+            "src/ElasticSearch.php",
+            "src/ElasticSearchQueryBuilder.php"
+        ]
     }
 }

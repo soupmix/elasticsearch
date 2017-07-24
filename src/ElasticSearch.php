@@ -49,6 +49,7 @@ final class ElasticSearch implements Base
         }
         return true;
     }
+
     public function drop(string $collection)
     {
         $params = ['index' => $this->index, 'type' => $collection];
@@ -67,9 +68,8 @@ final class ElasticSearch implements Base
 
     public function truncate(string $collection)
     {
-
-        $params = ['index' => $this->index, 'type' => $collection, 'body' => ['query' => ['bool' => ['match_all' => []]]]];
-        //$truncate = $this->conn->deleteByQuery($params);
+        $params = ['index' => $this->index, 'type' => $collection, 'body' => ['query' => ['bool' =>['match_all' => []]]]];
+        $this->conn->deleteByQuery($params);
     }
 
     public function createIndexes(string $collection, array $indexes)
@@ -181,13 +181,13 @@ final class ElasticSearch implements Base
         $results = $this->find($collection, $filter, ['_id'], null, 0, 10000);
         $deleteCount = 0;
         if ($results['total']>0) {
-            $params = [];
-            $params['index'] = $this->index;
-            $params['type'] = $collection;
+            $dParams = [];
+            $dParams['index'] = $this->index;
+            $dParams['type'] = $collection;
             foreach ($results['data'] as $result) {
-                $params['id'] = $result['_id'];
+                $dParams['id'] = $result['_id'];
                 try {
-                    $result = $this->conn->delete($params);
+                    $result = $this->conn->delete($dParams);
                     if ($result['found']) {
                         $deleteCount++;
                     }
@@ -203,17 +203,18 @@ final class ElasticSearch implements Base
 
     public function find(
         string $collection,
-            array $filters,
-            array $fields = null,
-            array $sort = null,
+            ?array $filters,
+            ?array $fields = null,
+            ?array $sort = null,
             int $start = 0,
             int$limit = 25
-    )
+    ) : array
     {
         $return_type = '_source';
         $params = [];
         $params['index'] = $this->index;
         $params['type'] = $collection;
+        $params['body'] = [];
         if ($filters!==null) {
             $filters = self::buildFilter($filters);
             $params['body'] = [
@@ -228,12 +229,9 @@ final class ElasticSearch implements Base
         }
         $count = $this->conn->count($params);
         if ($sort !== null) {
-            $params['sort'] = '';
+            $params['body']['sort'] = [];
             foreach ($sort as $sort_key => $sort_dir) {
-                if (!empty($params['sort'])) {
-                    $params['sort'] .= ', ';
-                }
-                $params['sort'] .= $sort_key . ':'.$sort_dir;
+                $params['body']['sort'][] = [$sort_key => $sort_dir];
             }
         }
         if ($fields !== null) {
@@ -254,7 +252,7 @@ final class ElasticSearch implements Base
         $result = [];
         foreach ($return['hits']['hits'] as $item) {
 
-            if (($return_type == 'fields') && ($fields !== ['_id'])) {
+            if (($return_type === 'fields') && ($fields !== ['_id'])) {
                 foreach ($item[$return_type]as $k => $v) {
                     $item[$return_type][$k] = $v[0];
                 }

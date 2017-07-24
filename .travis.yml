@@ -24,7 +24,7 @@ env:
 install:
   - mkdir /tmp/elasticsearch
 
-  - if [ $ES_VERSION = '5.5.4' ]; then
+  - if [ $ES_VERSION = '5.5.3' ]; then
     java -version;
     wget -O - https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz | tar xz --directory=/tmp/elasticsearch --strip-components=1;
     /tmp/elasticsearch/bin/elasticsearch -d -Epath.conf=/tmp;

@@ -23,7 +23,7 @@
         "codeclimate/php-test-reporter": "dev-master"
     },
     "autoload": {
-        "classmap": [
+        "files": [
             "src/ElasticSearch.php",
             "src/ElasticSearchQueryBuilder.php"
         ]

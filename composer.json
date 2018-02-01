@@ -14,7 +14,7 @@
     ],
     "require": {
         "soupmix/base": "^0.8",
-        "elasticsearch/elasticsearch": "~5.0"
+        "elasticsearch/elasticsearch": "~5.3"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.0",

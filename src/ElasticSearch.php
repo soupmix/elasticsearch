@@ -8,10 +8,10 @@ Use Elasticsearch\Client;
 
 final class ElasticSearch implements Base
 {
-    protected $conn = null;
-    protected $index = null;
-    protected $esMajorVersion = 2;
-    private static $filteredOrBool = [2 => 'filtered', 5 => 'bool'];
+    private $conn = null;
+    private $index = null;
+    private $esMajorVersion = 2;
+    private static $filteredOrBool = [2 => 'filtered', 5 => 'bool', 6 => 'bool'];
 
     private static $operators = [
         'range'     => ['gt', 'gte', 'lt', 'lte'],
@@ -83,13 +83,16 @@ final class ElasticSearch implements Base
         $params['type'] = $collection;
         try {
             $result = $this->conn->index($params);
-            if ($result['created']) {
-                return $result['_id'];
-            }
-            return null;
         } catch (\Exception $e) {
             return;
         }
+        if (
+            array_key_exists('created', $result)
+            || (array_key_exists('result', $result) && $result['result'] === 'created')
+        ) {
+            return $result['_id'];
+        }
+        return null;
     }
 
     public function get(string $collection, $docId)
@@ -166,13 +169,16 @@ final class ElasticSearch implements Base
             $params['id'] = $filter['_id'];
             try {
                 $result = $this->conn->delete($params);
-                if ($result['found']) {
-                    return 1;
-                }
-                return 0;
             } catch (\Exception $e) {
                 return 0;
             }
+            if (
+                array_key_exists('found', $result)
+                || (array_key_exists('result', $result) && $result['result'] === 'deleted')
+            ) {
+                return 1;
+            }
+            return 0;
         }
         $params = [];
         $params['index'] = $this->index;
@@ -188,12 +194,14 @@ final class ElasticSearch implements Base
                 $dParams['id'] = $result['_id'];
                 try {
                     $result = $this->conn->delete($dParams);
-                    if ($result['found']) {
-                        $deleteCount++;
-                    }
-
                 } catch (\Exception $e) {
-
+                    return 0;
+                }
+                if (
+                    array_key_exists('found', $result)
+                    || (array_key_exists('result', $result) && $result['result'] === 'deleted')
+                ) {
+                    $deleteCount++;
                 }
             }
             return $deleteCount;

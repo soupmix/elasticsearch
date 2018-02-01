@@ -146,7 +146,7 @@ class ElasticsearchTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('test2', $document['title']);
 
         $result = $this->client->delete('test', ['_id' => $docId]);
-        $this->assertTrue($result == 1);
+        $this->assertEquals(1, $result);
     }
 
     public function testInsertUpdateMultipleDocument()
@@ -181,6 +181,7 @@ class ElasticsearchTest extends \PHPUnit\Framework\TestCase
 
     public function testDeleteInvalidDocument()
     {
+        $this->client->create('test', []);
         $deletedCount = $this->client->delete('test', ['_id' => 'invalid_title_value']);
         $this->assertEquals($deletedCount, 0);
         $deletedCount = $this->client->delete('test', ['title' => 'invalid_title_value']);

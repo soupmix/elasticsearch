@@ -2,7 +2,7 @@
 
 
 [![Latest Stable Version](https://poser.pugx.org/soupmix/elasticsearch/v/stable)](https://packagist.org/packages/soupmix/elasticsearch) [![Total Downloads](https://poser.pugx.org/soupmix/elasticsearch/downloads)](https://packagist.org/packages/soupmix/elasticsearch) [![Latest Unstable Version](https://poser.pugx.org/soupmix/elasticsearch/v/unstable)](https://packagist.org/packages/soupmix/elasticsearch) [![License](https://poser.pugx.org/soupmix/elasticsearch/license)](https://packagist.org/packages/soupmix/elasticsearch)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/soupmix/elasticsearch/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/soupmix/elasticsearch/) [![Build Status](https://travis-ci.org/soupmix/elasticsearch.svg?branch=master)](https://travis-ci.org/soupmix/elasticsearch) [![Code Coverage](https://scrutinizer-ci.com/g/soupmix/elasticsearch/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/soupmix/elasticsearch/?branch=master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/soupmix/elasticsearch/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/soupmix/elasticsearch/) [![Build Status](https://travis-ci.org/soupmix/elasticsearch.svg?branch=master)](https://travis-ci.org/soupmix/elasticsearch) [![Coverage Status](https://coveralls.io/repos/github/soupmix/elasticsearch/badge.svg?branch=master)](https://coveralls.io/github/soupmix/elasticsearch?branch=master)
 
 Simple ElasticSearch abstraction layer adapter to handle CRUD operations written in PHP. This library does not provide any ORM or ODM. 
 
